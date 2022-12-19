@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="ChessPiece.fs" />
+    <Compile Include="Chessboard.fs" />
   </ItemGroup>
 
 </Project>
