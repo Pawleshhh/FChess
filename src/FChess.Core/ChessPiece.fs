@@ -1,36 +1,44 @@
 ﻿module FChess.Core.ChessPiece
 
 type Side =
-    | White
-    | Black
+    | White = 0
+    | Black = 1
 
 type ChessRow = 
-    | One = 1 
-    | Two = 2 
-    | Three = 3 
-    | Four = 4 
-    | Five = 5 
-    | Six = 6 
-    | Seven = 7 
-    | Eight = 8
+    | One = 0
+    | Two = 1 
+    | Three = 2 
+    | Four = 3 
+    | Five = 4 
+    | Six = 5 
+    | Seven = 6 
+    | Eight = 7
 
 type ChessColumn =
-    | A = 1
-    | B = 2
-    | C = 3
-    | D = 4
-    | E = 5
-    | F = 6
-    | G = 7
-    | H = 8
+    | A = 0
+    | B = 1
+    | C = 2
+    | D = 3
+    | E = 4
+    | F = 5
+    | G = 6
+    | H = 7
 
 type ChessPieceInfo = { Side : Side; Coords : ChessRow * ChessColumn }
 
 type ChessPiece =
-    | None of Side
+    | Empty
     | Pawn of Side
     | Knight of Side
     | Bishop of Side
     | Rook of Side
     | Queen of Side
     | King of Side
+    member self.Value =
+        match self with
+        | Pawn _ -> 1
+        | Knight _ -> 3
+        | Bishop _ -> 3
+        | Rook _ -> 5
+        | Queen _ -> 9
+        | _ -> 0
