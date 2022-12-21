@@ -66,13 +66,129 @@ let ``create initial chessboard, expect empty fields`` () =
     |> Array2D.iter (fun f -> Assert.IsTrue(match f.ChessPiece with | ChessPiece.Empty -> true | _ -> false))
 
 [<Test>]
-let ``fromRow, expect from to bottom direction rows`` () =
+let ``fromRow, expect from specified row to bottom direction rows`` () =
     let rows = fromRow 4 Direction.Bottom ()
 
     CollectionAssert.AreEqual([ChessRow.One; ChessRow.Two; ChessRow.Three; ChessRow.Four; ChessRow.Five], rows)
 
 [<Test>]
-let ``fromRow, expect from to top direction rows`` () =
+let ``fromRow, expect from specified row to top direction rows`` () =
     let rows = fromRow 4 Direction.Top ()
 
     CollectionAssert.AreEqual([ChessRow.Five; ChessRow.Six; ChessRow.Seven; ChessRow.Eight], rows)
+
+[<Test>]
+let ``fromColumn, expect from specified column to left direction columns`` () =
+    let columns = fromColumn 4 Direction.Left ()
+
+    CollectionAssert.AreEqual([ChessColumn.A; ChessColumn.B; ChessColumn.C; ChessColumn.D; ChessColumn.E], columns)
+
+[<Test>]
+let ``fromColumn, expect from specified column to right direction columns`` () =
+    let columns = fromColumn 4 Direction.Right ()
+
+    CollectionAssert.AreEqual([ChessColumn.E; ChessColumn.F; ChessColumn.G; ChessColumn.H], columns)
+
+[<Test>]
+let ``getRow, expect row 4 from column 4 to left direction`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getRow ChessRow.Four (fromColumn 4 Direction.Left)
+
+    Assert.AreEqual(5, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> fst f.Coords = ChessRow.Four))
+    CollectionAssert.AreEqual(
+        [ChessColumn.A; ChessColumn.B; ChessColumn.C; ChessColumn.D; ChessColumn.E], 
+        row
+        |> List.map (fun f -> snd f.Coords))
+
+[<Test>]
+let ``getRow, expect row 4 from column 4 to right direction`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getRow ChessRow.Four (fromColumn 4 Direction.Right)
+
+    Assert.AreEqual(4, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> fst(f.Coords) = ChessRow.Four))
+    CollectionAssert.AreEqual(
+        [ChessColumn.E; ChessColumn.F; ChessColumn.G; ChessColumn.H], 
+        row
+        |> List.map (fun f -> snd f.Coords))
+
+[<Test>]
+let ``getRow, expect row 4 from column 4 to column 2`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getRow ChessRow.Four (fromTo<ChessColumn> 4 2)
+
+    Assert.AreEqual(3, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> fst f.Coords = ChessRow.Four))
+    CollectionAssert.AreEqual(
+        [ChessColumn.C; ChessColumn.D; ChessColumn.E], 
+        row
+        |> List.map (fun f -> snd f.Coords))
+
+[<Test>]
+let ``getRow, expect row 4 from column 4 to column 6`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getRow ChessRow.Four (fromTo<ChessColumn> 4 6)
+
+    Assert.AreEqual(3, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> fst f.Coords = ChessRow.Four))
+    CollectionAssert.AreEqual(
+        [ChessColumn.E; ChessColumn.F; ChessColumn.G], 
+        row
+        |> List.map (fun f -> snd f.Coords))
+
+[<Test>]
+let ``getColumn, expect column 4 from row 4 to bottom direction`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getColumn ChessColumn.E (fromRow 4 Direction.Bottom)
+
+    Assert.AreEqual(5, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> snd f.Coords = ChessColumn.E))
+    CollectionAssert.AreEqual(
+        [ChessRow.One; ChessRow.Two; ChessRow.Three; ChessRow.Four; ChessRow.Five], 
+        row
+        |> List.map (fun f -> fst f.Coords))
+
+[<Test>]
+let ``getColumn, expect column 4 from row 4 to top direction`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getColumn ChessColumn.E (fromRow 4 Direction.Top)
+
+    Assert.AreEqual(4, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> snd f.Coords = ChessColumn.E))
+    CollectionAssert.AreEqual(
+        [ChessRow.Five; ChessRow.Six; ChessRow.Seven; ChessRow.Eight], 
+        row
+        |> List.map (fun f -> fst f.Coords))
+
+[<Test>]
+let ``getColumn, expect column 4 from row 4 to row 2`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getColumn ChessColumn.E (fromTo<ChessRow> 4 2)
+
+    Assert.AreEqual(3, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> snd f.Coords = ChessColumn.E))
+    CollectionAssert.AreEqual(
+        [ChessRow.Three; ChessRow.Four; ChessRow.Five], 
+        row
+        |> List.map (fun f -> fst f.Coords))
+
+[<Test>]
+let ``getColumn, expect column 4 from row 4 to row 6`` () =
+    let chessboard = create ()
+    
+    let row = chessboard |> getColumn ChessColumn.E (fromTo<ChessRow> 4 6)
+
+    Assert.AreEqual(3, row.Length)
+    Assert.IsTrue(row |> List.forall (fun f -> snd f.Coords = ChessColumn.E))
+    CollectionAssert.AreEqual(
+        [ChessRow.Five; ChessRow.Six; ChessRow.Seven], 
+        row
+        |> List.map (fun f -> fst f.Coords))

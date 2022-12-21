@@ -8,9 +8,9 @@ type T = FieldInfo[,]
 
 type Direction =
     | Top = 1
-    | Right = 1
-    | Bottom = -1
-    | Left = -1
+    | Right = 2
+    | Bottom = 3
+    | Left = 4
 
 let private enumToList<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) |> Array.toList
 
@@ -67,25 +67,25 @@ let create () =
     let chessboard = Array2D.init 8 8 (fun i j -> initialFieldInfo (i, j))
     chessboard
 
-let getRow at row chessboard =
-    at ()
+let getRow row fromColumn chessboard =
+    fromColumn ()
     |> List.map (fun column -> chessboard |> fieldAt (row, column))
     
-let fromRow from direction =
+let fromColumn column direction =
     match direction with
-    | Direction.Bottom -> (fun () -> enumToList<ChessRow>[..int from])
-    | Direction.Top -> (fun () -> enumToList<ChessRow>[int from..])
-    | _ -> failwith "Expected either Bottom or Top direction only"
-
-let getColumn at column chessboard =
-    at ()
+    | Direction.Left -> (fun () -> enumToList<ChessColumn>[..int column])
+    | Direction.Right -> (fun () -> enumToList<ChessColumn>[int column..])
+    | _ -> failwith "Expected either Left or Right direction only"
+    
+let getColumn column fromRow chessboard =
+    fromRow ()
     |> List.map (fun row -> chessboard |> fieldAt (row, column))
 
-let fromColumn from direction =
+let fromRow row direction =
     match direction with
-    | Direction.Left -> (fun () -> enumToList<ChessColumn>[.. int from])
-    | Direction.Right -> (fun () -> enumToList<ChessColumn>[int from ..])
-    | _ -> failwith "Expected either Left or Right direction only"
+    | Direction.Bottom -> (fun () -> enumToList<ChessRow>[..int row])
+    | Direction.Top -> (fun () -> enumToList<ChessRow>[int row..])
+    | _ -> failwith "Expected either Bottom or Top direction only"
 
 let fromTo<'a> from to' =
     match (from, to') with
