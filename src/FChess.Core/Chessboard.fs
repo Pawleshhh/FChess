@@ -12,6 +12,20 @@ type Direction =
     | Bottom = 3
     | Left = 4
 
+type DiagonalDirection =
+    | TopRight = 1
+    | BottomRight = 2
+    | BottomLeft = 3
+    | TopLeft = 4
+
+let oppositeDirection direction =
+    match direction with
+    | Direction.Top -> Direction.Bottom
+    | Direction.Bottom -> Direction.Top
+    | Direction.Left -> Direction.Right
+    | Direction.Right -> Direction.Left
+    | _ -> failwith "Unexpected direction value"
+
 let private enumToList<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) |> Array.toList
 
 let fieldAt (coords : ChessRow * ChessColumn) (chessboard : T) =
@@ -63,15 +77,15 @@ let initialFieldInfo coords =
         ChessPiece = pieceSide row |> piece
     }
 
-let create () =
-    let chessboard = Array2D.init 8 8 (fun i j -> initialFieldInfo (i, j))
+let create initialField =
+    let chessboard = Array2D.init 8 8 (fun i j -> initialField (i, j))
     chessboard
 
 let getRow row fromColumn chessboard =
     fromColumn ()
     |> List.map (fun column -> chessboard |> fieldAt (row, column))
     
-let fromColumn column direction =
+let fromColumn (column : ChessColumn) direction =
     match direction with
     | Direction.Left -> (fun () -> enumToList<ChessColumn>[..int column])
     | Direction.Right -> (fun () -> enumToList<ChessColumn>[int column..])
@@ -81,7 +95,7 @@ let getColumn column fromRow chessboard =
     fromRow ()
     |> List.map (fun row -> chessboard |> fieldAt (row, column))
 
-let fromRow row direction =
+let fromRow (row : ChessRow) direction =
     match direction with
     | Direction.Bottom -> (fun () -> enumToList<ChessRow>[..int row])
     | Direction.Top -> (fun () -> enumToList<ChessRow>[int row..])
@@ -91,3 +105,43 @@ let fromTo<'a> from to' =
     match (from, to') with
         | f, t when int f > int t -> (fun () -> enumToList<'a>[int to' .. int from])
         | _ -> (fun () -> enumToList<'a>[int from .. int to'])
+
+let getDiagonal from chessboard =
+    from ()
+    |> List.map (fun (row, column) -> chessboard |> fieldAt (row, column))
+
+let fromCoords coords direction =
+    let (row, column) = coords
+    let (rowSign, columnSign) = 
+        match direction with
+        | DiagonalDirection.TopRight -> (1, 1)
+        | DiagonalDirection.BottomRight -> (-1, 1)
+        | DiagonalDirection.BottomLeft -> (-1, -1)
+        | DiagonalDirection.TopLeft -> (1, -1)
+        | _ -> failwith "Unexpected diaglonal direction"
+
+    let rec iterate i j result =
+        if i < 0 || i > 7 || j < 0 || j > 7 then
+            result
+        else
+            iterate (i + rowSign) (j + columnSign) (result @ [(enum<ChessRow> i, enum<ChessColumn> j)])
+
+    iterate (int row) (int column) List.empty<(ChessRow * ChessColumn)>
+
+let coordsFromTo from to' =
+    let (rowSign, columnSign, endRowIndex, endColumnIndex) = 
+        match from, to' with
+        | (sr, sc), (er, ec) when sr < er && sc < ec -> (1, 1, er, ec)
+        | (sr, sc), (er, ec) when sr > er && sc < ec -> (-1, 1, sr, ec)
+        | (sr, sc), (er, ec) when sr > er && sc > ec -> (-1, -1, sr, sc)
+        | (sr, sc), (er, ec) when sr < er && sc > ec -> (1, -1, er, sc)
+        | _ -> failwith "Unexpected diaglonal direction"
+
+    let rec iterate i j result =
+        if i = (endRowIndex + rowSign) || j = (endColumnIndex + columnSign) then
+            result
+        else
+            iterate (i + rowSign) (j + columnSign) (result @ [(enum<ChessRow> i, enum<ChessColumn> j)])
+
+    let (startRow, startColumn) = from
+    iterate (int startRow) (int startColumn) List.empty<(ChessRow * ChessColumn)>
