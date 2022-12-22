@@ -26,7 +26,8 @@ let oppositeDirection direction =
     | Direction.Right -> Direction.Left
     | _ -> failwith "Unexpected direction value"
 
-let private enumToList<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) |> Array.toList
+let private enumToList<'a when 'a :> Enum> = (Enum.GetValues(typeof<'a>) :?> ('a [])) |> Array.toList
+let private eint (v : 'a) = Convert.ToInt32 v
 
 let fieldAt (coords : ChessRow * ChessColumn) (chessboard : T) =
     let (row, column) = coords
@@ -72,9 +73,18 @@ let initialFieldInfo coords =
         | _ -> fun _ -> ChessPiece.Empty
 
     { 
-        Coords = (enum<ChessRow>(row), enum<ChessColumn>(column)); 
+        Coords = (enum<ChessRow> row, enum<ChessColumn> column); 
         Side = side;
         ChessPiece = pieceSide row |> piece
+    }
+
+let emptyFieldInfo coords =
+    let side = fieldSide coords
+    let row, column = coords
+    { 
+        Coords = (enum<ChessRow> row, enum<ChessColumn> column); 
+        Side = side;
+        ChessPiece = ChessPiece.Empty
     }
 
 let create initialField =
@@ -101,16 +111,16 @@ let fromRow (row : ChessRow) direction =
     | Direction.Top -> (fun () -> enumToList<ChessRow>[int row..])
     | _ -> failwith "Expected either Bottom or Top direction only"
 
-let fromTo<'a> from to' =
+let fromTo<'a when 'a :> Enum> (from : 'a) (to' : 'a) =
     match (from, to') with
-        | f, t when int f > int t -> (fun () -> enumToList<'a>[int to' .. int from])
-        | _ -> (fun () -> enumToList<'a>[int from .. int to'])
+        | f, t when eint f > eint t -> (fun () -> enumToList<'a>[eint to' .. eint from])
+        | _ -> (fun () -> enumToList<'a>[eint from .. eint to'])
 
 let getDiagonal from chessboard =
     from ()
     |> List.map (fun (row, column) -> chessboard |> fieldAt (row, column))
 
-let fromCoords coords direction =
+let diagonalFromCoords (coords : (ChessRow * ChessColumn)) direction =
     let (row, column) = coords
     let (rowSign, columnSign) = 
         match direction with
@@ -128,13 +138,14 @@ let fromCoords coords direction =
 
     iterate (int row) (int column) List.empty<(ChessRow * ChessColumn)>
 
-let coordsFromTo from to' =
+let diagonalCoordsFromTo (from : (ChessRow * ChessColumn)) (to' : (ChessRow * ChessColumn)) =
     let (rowSign, columnSign, endRowIndex, endColumnIndex) = 
         match from, to' with
-        | (sr, sc), (er, ec) when sr < er && sc < ec -> (1, 1, er, ec)
-        | (sr, sc), (er, ec) when sr > er && sc < ec -> (-1, 1, sr, ec)
-        | (sr, sc), (er, ec) when sr > er && sc > ec -> (-1, -1, sr, sc)
-        | (sr, sc), (er, ec) when sr < er && sc > ec -> (1, -1, er, sc)
+        | (sr, sc), (er, ec) when abs (eint sr - eint er) <> abs (eint sc - eint ec) -> failwith "Given coords cannot make diagonal"
+        | (sr, sc), (er, ec) when sr < er && sc < ec -> (1, 1, eint er, eint ec)
+        | (sr, sc), (er, ec) when sr > er && sc < ec -> (-1, 1, eint er, eint ec)
+        | (sr, sc), (er, ec) when sr > er && sc > ec -> (-1, -1, eint er, eint ec)
+        | (sr, sc), (er, ec) when sr < er && sc > ec -> (1, -1, eint er, eint ec)
         | _ -> failwith "Unexpected diaglonal direction"
 
     let rec iterate i j result =
