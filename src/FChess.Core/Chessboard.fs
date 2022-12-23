@@ -136,7 +136,7 @@ let diagonalFromCoords (coords : (ChessRow * ChessColumn)) direction =
         else
             iterate (i + rowSign) (j + columnSign) (result @ [(enum<ChessRow> i, enum<ChessColumn> j)])
 
-    iterate (int row) (int column) List.empty<(ChessRow * ChessColumn)>
+    fun () -> iterate (int row) (int column) List.empty<(ChessRow * ChessColumn)>
 
 let diagonalCoordsFromTo (from : (ChessRow * ChessColumn)) (to' : (ChessRow * ChessColumn)) =
     let (rowSign, columnSign, endRowIndex, endColumnIndex) = 
@@ -155,4 +155,4 @@ let diagonalCoordsFromTo (from : (ChessRow * ChessColumn)) (to' : (ChessRow * Ch
             iterate (i + rowSign) (j + columnSign) (result @ [(enum<ChessRow> i, enum<ChessColumn> j)])
 
     let (startRow, startColumn) = from
-    iterate (int startRow) (int startColumn) List.empty<(ChessRow * ChessColumn)>
+    fun () -> iterate (int startRow) (int startColumn) List.empty<(ChessRow * ChessColumn)>

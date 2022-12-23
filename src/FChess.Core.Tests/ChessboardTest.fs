@@ -198,7 +198,7 @@ let ``getColumn, expect column E from row 5 to row 7`` () =
 
 [<Test>]
 let ``diagonalFromCoords, expect coords from (4, C) into TopRight direction`` () =
-    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopRight
+    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopRight ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C); (Row.Five, Column.D); (Row.Six, Column.E);
@@ -207,7 +207,7 @@ let ``diagonalFromCoords, expect coords from (4, C) into TopRight direction`` ()
 
 [<Test>]
 let ``diagonalFromCoords, expect coords from (4, C) into BottomRight direction`` () =
-    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomRight
+    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomRight ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C); (Row.Three, Column.D); (Row.Two, Column.E);
@@ -216,7 +216,7 @@ let ``diagonalFromCoords, expect coords from (4, C) into BottomRight direction``
 
 [<Test>]
 let ``diagonalFromCoords, expect coords from (4, C) into BottomLeft direction`` () =
-    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomLeft
+    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomLeft ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C); (Row.Three, Column.B); (Row.Two, Column.A);],
@@ -224,7 +224,7 @@ let ``diagonalFromCoords, expect coords from (4, C) into BottomLeft direction`` 
 
 [<Test>]
 let ``diagonalFromCoords, expect coords from (4, C) into TopLeft direction`` () =
-    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopLeft
+    let diagonal = diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopLeft ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C); (Row.Five, Column.B); (Row.Six, Column.A);],
@@ -232,7 +232,7 @@ let ``diagonalFromCoords, expect coords from (4, C) into TopLeft direction`` () 
 
 [<Test>] // Top Right
 let ``diagonalCoordsFromTo, expect coords from (4, C) to (7, F)`` () =
-    let diagonal = diagonalCoordsFromTo (Row.Four, Column.C) (Row.Seven, Column.F)
+    let diagonal = diagonalCoordsFromTo (Row.Four, Column.C) (Row.Seven, Column.F) ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C);(Row.Five, Column.D);(Row.Six, Column.E); (Row.Seven, Column.F)],
@@ -240,7 +240,7 @@ let ``diagonalCoordsFromTo, expect coords from (4, C) to (7, F)`` () =
 
 [<Test>] // Bottom Left
 let ``diagonalCoordsFromTo, expect coords from (4, C) to (2, A)`` () =
-    let diagonal = diagonalCoordsFromTo (Row.Four, Column.C) (Row.Two, Column.A)
+    let diagonal = diagonalCoordsFromTo (Row.Four, Column.C) (Row.Two, Column.A) ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.C);(Row.Three, Column.B);(Row.Two, Column.A);],
@@ -248,7 +248,7 @@ let ``diagonalCoordsFromTo, expect coords from (4, C) to (2, A)`` () =
 
 [<Test>] // Top Left
 let ``diagonalCoordsFromTo, expect coords from (4, H) to (6, F)`` () =
-    let diagonal = diagonalCoordsFromTo (Row.Four, Column.H) (Row.Six, Column.F)
+    let diagonal = diagonalCoordsFromTo (Row.Four, Column.H) (Row.Six, Column.F) ()
 
     CollectionAssert.AreEqual(
         [(Row.Four, Column.H);(Row.Five, Column.G);(Row.Six, Column.F)],
@@ -256,8 +256,54 @@ let ``diagonalCoordsFromTo, expect coords from (4, H) to (6, F)`` () =
 
 [<Test>] // Bottom Right
 let ``diagonalCoordsFromTo, expect coords from (7, C) to (4, F)`` () =
-    let diagonal = diagonalCoordsFromTo (Row.Seven, Column.C) (Row.Four, Column.F)
+    let diagonal = diagonalCoordsFromTo (Row.Seven, Column.C) (Row.Four, Column.F) ()
 
     CollectionAssert.AreEqual(
         [(Row.Seven, Column.C);(Row.Six, Column.D);(Row.Five, Column.E);(Row.Four, Column.F)],
         diagonal)
+
+[<Test>]
+let ``getDiagonal, expect fields from (4, C) into TopRight direction`` () =
+    let chessboard = create emptyFieldInfo
+
+    let diagonal = 
+        chessboard 
+        |> getDiagonal (diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopRight)
+
+    let expectedCoords = [(Row.Four, Column.C); (Row.Five, Column.D); (Row.Six, Column.E);
+        (Row.Seven, Column.F); (Row.Eight, Column.G);]
+    Assert.IsTrue (diagonal |> List.forall (fun f -> expectedCoords |> List.contains f.Coords))
+
+[<Test>]
+let ``getDiagonal, expect fields from (4, C) into BottomRight direction`` () =
+    let chessboard = create emptyFieldInfo
+
+    let diagonal =
+        chessboard
+        |> getDiagonal (diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomRight)
+
+    let expectedCoords = [(Row.Four, Column.C); (Row.Three, Column.D); (Row.Two, Column.E);
+        (Row.One, Column.F);]
+    Assert.IsTrue (diagonal |> List.forall (fun f -> expectedCoords |> List.contains f.Coords))
+
+[<Test>]
+let ``getDiagonal, expect fields from (4, C) into BottomLeft direction`` () =
+    let chessboard = create emptyFieldInfo
+
+    let diagonal =
+        chessboard
+        |> getDiagonal (diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.BottomLeft)
+
+    let expectedCoords = [(Row.Four, Column.C); (Row.Three, Column.B); (Row.Two, Column.A);]
+    Assert.IsTrue (diagonal |> List.forall (fun f -> expectedCoords |> List.contains f.Coords))
+
+[<Test>]
+let ``getDiagonal, expect fields from (4, C) into TopLeft direction`` () =
+    let chessboard = create emptyFieldInfo
+
+    let diagonal =
+        chessboard
+        |> getDiagonal (diagonalFromCoords (Row.Four, Column.C) DiagonalDirection.TopLeft)
+
+    let expectedCoords = [(Row.Four, Column.C); (Row.Five, Column.B); (Row.Six, Column.A);]
+    Assert.IsTrue (diagonal |> List.forall (fun f -> expectedCoords |> List.contains f.Coords))
